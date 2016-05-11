@@ -279,7 +279,7 @@ public class WebRtcClient {
         endPoints[peer.endPoint] = false;
     }
 
-    public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params, EGLContext mEGLcontext, MessageSender sender) {
+    public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EGLContext mEGLcontext, MessageSender sender) {
         mListener = listener;
         pcParams = params;
         mSender = sender;
@@ -319,10 +319,10 @@ public class WebRtcClient {
         for (Peer peer : peers.values()) {
             peer.pc.dispose();
         }
-        videoSource.dispose();
+        if (videoSource != null) videoSource.dispose();
         factory.dispose();
-        client.disconnect();
-        client.close();
+//        client.disconnect();
+//        client.close();
     }
 
     private int findEndPoint() {

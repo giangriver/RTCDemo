@@ -3,12 +3,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <android.opengl.GLSurfaceView
+        android:id="@+id/glview_call"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <android.view.SurfaceView
+        android:id="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <TextView
         android:id="@+id/tvMsg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="@string/app_name"
         android:textAlignment="center"
         android:textSize="20sp" />
 
@@ -21,12 +30,14 @@
 
         <ImageButton
             android:id="@+id/btAnswer"
+            android:onClick="onClick"
             android:layout_width="@dimen/image_button_size"
             android:layout_height="@dimen/image_button_size"
             android:src="@android:drawable/sym_action_call" />
 
         <ImageButton
             android:id="@+id/btEndCall"
+            android:onClick="onClick"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="@dimen/image_button_size"
             android:layout_height="@dimen/image_button_size"
