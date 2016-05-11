@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements OnUserListInterac
             }
         });
 
-        User user1 = new User(1, "harold","cwgC5irpVrE:APA91bFQxXBjHPyTDBHLk2zHBrDoeQ_i0RVfcSS0KmF-_G-Kg06S-j26GmoOHo2ka1-WGfmUxuyS0b8tGKT9BnuByH47UY0QKr0ztoZg703uWVkm1uAQ3_z997HtQZv-QrVFGGQkghou", "");
+        User user1 = new User(1, "harold","", "cwgC5irpVrE:APA91bFQxXBjHPyTDBHLk2zHBrDoeQ_i0RVfcSS0KmF-_G-Kg06S-j26GmoOHo2ka1-WGfmUxuyS0b8tGKT9BnuByH47UY0QKr0ztoZg703uWVkm1uAQ3_z997HtQZv-QrVFGGQkghou");
         User user2 = new User(2, "river","", "");
         User user3 = new User(3, "test","", "");
         userList = new ArrayList<>();
@@ -59,6 +59,10 @@ public class MainActivity extends AppCompatActivity implements OnUserListInterac
     public void onClickCallUser(User user) {
         Log.i(getClass().getSimpleName(), user.getUserName());
         Intent intent = new Intent(this, CallActivity.class);
+        intent.putExtra("regId", user.getRegistrationId());
+        intent.putExtra("username", user.getUserName());
         startActivity(intent);
     }
+
+
 }

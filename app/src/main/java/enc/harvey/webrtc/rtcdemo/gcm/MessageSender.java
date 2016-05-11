@@ -1,9 +1,10 @@
 package enc.harvey.webrtc.rtcdemo.gcm;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 
 import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
@@ -13,19 +14,20 @@ import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
  */
 public class MessageSender {
 
-    private HttpURLConnection connection;
-
-    public void sendPost() {
+    public void sendPost(JSONObject message) {
         try {
             URL gcmAPI = new URL(AppConfig.GCM_API);
-            connection = (HttpURLConnection) gcmAPI.openConnection();
+            HttpURLConnection connection = (HttpURLConnection) gcmAPI.openConnection();
 
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Authorization", "key=" + AppConfig.API_KEY);
             connection.setDoOutput(true);
 
-            
+            OutputStreamWriter wr = new OutputStreamWriter(connection.getOutputStream());
+            wr.write(message.toString());
+            wr.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
