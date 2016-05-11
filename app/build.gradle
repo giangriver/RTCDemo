@@ -28,4 +28,5 @@ dependencies {
     compile 'io.pristine:libjingle:8871@aar'
     compile 'com.android.support:support-v4:23.3.0'
     compile 'com.android.support:recyclerview-v7:23.3.0'
+    compile 'com.github.nkzawa:socket.io-client:0.4.2'
 }
