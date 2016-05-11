@@ -1,7 +1,7 @@
 package enc.harvey.webrtc.rtcdemo.activity;
 
+import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,11 +18,8 @@ import enc.harvey.webrtc.rtcdemo.listener.OnUserListInteractionListener;
 import enc.harvey.webrtc.rtcdemo.model.User;
 import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
 
-public class MainActivity extends AppCompatActivity implements OnUserListInteractionListener {
-
-    private List<User> userList;
-
-
+public class MainActivity extends Activity implements OnUserListInteractionListener {
+    private final String TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,19 +29,19 @@ public class MainActivity extends AppCompatActivity implements OnUserListInterac
         registrationIdManager.registerIfNeeded(new RegistrationIdManager.RegistrationCompletedHandler() {
             @Override
             public void onSuccess(String registrationId, boolean isNewRegistration) {
-                Log.i("Registration Id", registrationId);
+                Log.d(TAG, "Registration Id: " + registrationId);
             }
 
             @Override
             public void onFailure(String ex) {
-                Log.i("Registration Id", "Register Fail");
+                Log.d(TAG, "Registration Id: Register Fail");
             }
         });
 
         User user1 = new User(1, "harold","", "cwgC5irpVrE:APA91bFQxXBjHPyTDBHLk2zHBrDoeQ_i0RVfcSS0KmF-_G-Kg06S-j26GmoOHo2ka1-WGfmUxuyS0b8tGKT9BnuByH47UY0QKr0ztoZg703uWVkm1uAQ3_z997HtQZv-QrVFGGQkghou");
-        User user2 = new User(2, "river","", "");
+        User user2 = new User(2, "river galaxy S3","", "e0lrKXqo8ec:APA91bFXohgZsv11T_zdKz8dBczJFRspmI7mNowaIjPl-8iwOlPH35y1S5cEbiwh8vcS9uYwVFBmg33u8m1Knkr4Qycabzv3PJHYpqZEIcoYS31jPTp0VbZ4QV_fGxG1CEmZ7nEfHvuz");
         User user3 = new User(3, "test","", "");
-        userList = new ArrayList<>();
+        List<User> userList = new ArrayList<>();
         userList.add(user1);
         userList.add(user2);
         userList.add(user3);
@@ -63,6 +60,4 @@ public class MainActivity extends AppCompatActivity implements OnUserListInterac
         intent.putExtra("username", user.getUserName());
         startActivity(intent);
     }
-
-
 }

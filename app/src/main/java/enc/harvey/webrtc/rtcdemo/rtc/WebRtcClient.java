@@ -3,8 +3,6 @@ package enc.harvey.webrtc.rtcdemo.rtc;
 import android.opengl.EGLContext;
 import android.util.Log;
 
-import com.github.nkzawa.socketio.client.Socket;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.AudioSource;
@@ -38,7 +36,7 @@ public class WebRtcClient {
     private MediaStream localMS;
     private VideoSource videoSource;
     private RtcListener mListener;
-    private Socket client;
+//    private Socket client;
     private MessageSender mSender;
 
     /**
@@ -137,6 +135,7 @@ public class WebRtcClient {
 
         @Override
         public void onPeer(JSONObject data) {
+            Log.d(TAG, "MessageHandler onPeer: " + data.toString());
             try {
                 String from = data.getString("from");
                 String type = data.getString("type");
@@ -161,12 +160,11 @@ public class WebRtcClient {
             }
         }
 
-
         @Override
         public void onId(String regId) {
-
+            Log.d(TAG, "MessageHandler onId: " + regId);
+            mListener.onCallReady(regId);
         }
-
     }
 
     private class Peer implements SdpObserver, PeerConnection.Observer {
@@ -279,10 +277,10 @@ public class WebRtcClient {
         endPoints[peer.endPoint] = false;
     }
 
-    public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EGLContext mEGLcontext, MessageSender sender) {
+    public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EGLContext mEGLcontext) {
         mListener = listener;
         pcParams = params;
-        mSender = sender;
+        mSender = new MessageSender();
         PeerConnectionFactory.initializeAndroidGlobals(listener, true, true,
                 params.videoCodecHwAcceleration, mEGLcontext);
         factory = new PeerConnectionFactory();
@@ -343,7 +341,8 @@ public class WebRtcClient {
         try {
             JSONObject message = new JSONObject();
             message.put("name", name);
-            client.emit("readyToStream", message);
+//            client.emit("readyToStream", message);
+            mSender.sendPost(message);
         } catch (JSONException e) {
             e.printStackTrace();
         }

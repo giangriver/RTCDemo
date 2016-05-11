@@ -80,6 +80,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
         final Intent intent = getIntent();
         final String action = intent.getAction();
+        Log.d(TAG, "action: " + action);
 
         if (Intent.ACTION_VIEW.equals(action)) {
             final List<String> segments = intent.getData().getPathSegments();
@@ -93,12 +94,12 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         PeerConnectionParameters params = new PeerConnectionParameters(
                 true, false, displaySize.x, displaySize.y, 30, 1, VIDEO_CODEC_VP9, true, 1, AUDIO_CODEC_OPUS, true);
 
-        client = new WebRtcClient(this, params, VideoRendererGui.getEGLContext(), new MessageSender());
+        client = new WebRtcClient(this, params, VideoRendererGui.getEGLContext());
     }
 
     @Override
     public void onClick(View v) {
-        Log.e(TAG, "RIVER onClick");
+        Log.d(TAG, "onClick");
         switch (v.getId()) {
             case R.id.btAnswer:
                 break;
@@ -180,7 +181,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     @Override
     public void onLocalStream(MediaStream localStream) {
-        Log.e(TAG, "RIVER onLocalStream");
+        Log.d(TAG, "onLocalStream");
         localStream.videoTracks.get(0).addRenderer(new VideoRenderer(localRender));
         VideoRendererGui.update(localRender,
                 LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
@@ -190,7 +191,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     @Override
     public void onAddRemoteStream(MediaStream remoteStream, int endPoint) {
-        Log.e(TAG, "RIVER onAddRemoteStream");
+        Log.d(TAG, "onAddRemoteStream");
         remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
         VideoRendererGui.update(remoteRender,
                 REMOTE_X, REMOTE_Y,
@@ -203,6 +204,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     @Override
     public void onRemoveRemoteStream(int endPoint) {
+        Log.d(TAG, "onRemoveRemoteStream");
         VideoRendererGui.update(localRender,
                 LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING,
