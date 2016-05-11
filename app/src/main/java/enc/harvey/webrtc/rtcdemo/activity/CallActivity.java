@@ -1,7 +1,9 @@
-package enc.harvey.webrtc.rtcdemo;
+package enc.harvey.webrtc.rtcdemo.activity;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import enc.harvey.webrtc.rtcdemo.R;
 
 public class CallActivity extends AppCompatActivity {
 
