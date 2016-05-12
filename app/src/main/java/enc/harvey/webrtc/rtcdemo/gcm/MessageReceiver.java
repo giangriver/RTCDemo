@@ -7,23 +7,23 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 
+import enc.harvey.webrtc.rtcdemo.utils.Constants;
+
 /**
  * Created by harold on 10/05/2016.
  */
 public class MessageReceiver extends WakefulBroadcastReceiver {
-
+    private final String TAG = MessageReceiver.class.getSimpleName();
 
     @Override
     public void onReceive(Context context, Intent intent) {
         Bundle bundle = intent.getExtras();
-        final String strData = bundle.getString("caller_id");
+        final String strData = bundle.getString(Constants.KEY_CALLER_ID);
+        Log.d(TAG, "RECEIVER data: " + strData);
         if (strData != null) {
             Intent broadcastIntent = new Intent("GCMMessage");
-            broadcastIntent.putExtra("caller_id", strData);
-            Log.i("RECEIVER", "AAAAAAAAAAAAAAAAAAAAAAAAAAaa");
+            broadcastIntent.putExtra(Constants.KEY_CALLER_ID, strData);
             LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
-
         }
-
     }
 }

@@ -23,10 +23,10 @@ import enc.harvey.webrtc.rtcdemo.listener.OnCallingListener;
 import enc.harvey.webrtc.rtcdemo.listener.OnUserListInteractionListener;
 import enc.harvey.webrtc.rtcdemo.model.User;
 import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
+import enc.harvey.webrtc.rtcdemo.utils.Constants;
 
 public class MainActivity extends Activity implements OnUserListInteractionListener, OnCallingListener {
     private final String TAG = MainActivity.class.getSimpleName();
-    private String caller_id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,10 +48,12 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
         User user1 = new User(1, "harold", "", "cwgC5irpVrE:APA91bFQxXBjHPyTDBHLk2zHBrDoeQ_i0RVfcSS0KmF-_G-Kg06S-j26GmoOHo2ka1-WGfmUxuyS0b8tGKT9BnuByH47UY0QKr0ztoZg703uWVkm1uAQ3_z997HtQZv-QrVFGGQkghou");
         User user2 = new User(2, "river galaxy S3", "", "e0lrKXqo8ec:APA91bFXohgZsv11T_zdKz8dBczJFRspmI7mNowaIjPl-8iwOlPH35y1S5cEbiwh8vcS9uYwVFBmg33u8m1Knkr4Qycabzv3PJHYpqZEIcoYS31jPTp0VbZ4QV_fGxG1CEmZ7nEfHvuz");
         User user3 = new User(3, "test", "", "c4sE4TeWgr0:APA91bHEOY1OabkOpjph2ZYaWbEsV0Mk_GmO_RsfYFZKObB7qOEnru6xyTXULgcwnTUSGE11_LFlNZox0AGHXO5NlHJW3BOA6eLCJ2lOlNk0C5ipc_aaWFvPwi31XO2VkLTulxiM8zKA");
+        User user4 = new User(4, "river nexus 4", "", "cDwZ9gVw-x8:APA91bGm1W9BwXWCMstAY0-iKeagrpspjTZJx8wsN670Bj_I2PDxoWAKs3qsc2ds-07R_EykmelVGyJx572VK9fsTpDC0zCagxVSzpz_7lmnFImmmc_CztJDKEl6Kw0aJmGt3-M8zzfd");
         List<User> userList = new ArrayList<>();
         userList.add(user1);
         userList.add(user2);
         userList.add(user3);
+        userList.add(user4);
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -64,7 +66,7 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
     @Override
     public void onClickCallUser(User user) {
         Log.i(getClass().getSimpleName(), user.getUserName());
-        openCallActivity(user.getRegistrationId(), true, getApplicationContext());
+        openCallActivity(user.getRegistrationId(), true);
     }
 
     @Override
@@ -82,16 +84,15 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
     private BroadcastReceiver onNotice =  new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            caller_id = intent.getStringExtra("caller_id");
-            openCallActivity(caller_id, false, context);
-            Log.i("TAO LA HAROLD", "SDSDSDSDJSHDJKHSJKDHSJKDHK");
+            String caller_id = intent.getStringExtra(Constants.KEY_CALLER_ID);
+            openCallActivity(caller_id, false);
         }
     };
 
-    private void openCallActivity(String caller_id, boolean isCalling, Context context) {
-        Intent intent = new Intent(context.getApplicationContext(), CallActivity.class);
-        intent.putExtra("caller_id", caller_id);
-        intent.putExtra("isCalling", isCalling);
+    private void openCallActivity(String caller_id, boolean isOutgoingCall) {
+        Intent intent = new Intent(this, CallActivity.class);
+        intent.putExtra(Constants.KEY_CALLER_ID, caller_id);
+        intent.putExtra(Constants.KEY_IS_OUTGOING_CALL, isOutgoingCall);
         startActivity(intent);
     }
 }

@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.List;
 
 import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
 
@@ -18,14 +17,14 @@ import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
  */
 public class MessageSender {
 
-    public void sendPost(List<String> to, JSONObject message) {
+    public void sendPost(String to, JSONObject message) {
         /**
          * registration_ids
          * data
          */
         JSONObject msg = new JSONObject();
         try {
-            msg.put("registration_ids", to);
+            msg.put("to", to);
             msg.put("data", message);
 
             URL gcmAPI = new URL(AppConfig.GCM_API);

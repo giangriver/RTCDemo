@@ -20,6 +20,7 @@ import enc.harvey.webrtc.rtcdemo.R;
 import enc.harvey.webrtc.rtcdemo.listener.OnCallingListener;
 import enc.harvey.webrtc.rtcdemo.rtc.PeerConnectionParameters;
 import enc.harvey.webrtc.rtcdemo.rtc.WebRtcClient;
+import enc.harvey.webrtc.rtcdemo.utils.Constants;
 
 public class CallActivity extends Activity implements WebRtcClient.RtcListener, View.OnClickListener, OnCallingListener {
     private final String TAG = CallActivity.class.getSimpleName();
@@ -46,10 +47,9 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     private VideoRenderer.Callbacks localRender;
     private VideoRenderer.Callbacks remoteRender;
     private WebRtcClient client;
-    private String mCallerId;
-    private WebRtcClient.RtcListener rtcListener;
 
-    private String regId;
+    private String mCallerId;
+    private boolean isOutgoingCall = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +62,8 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
                         | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_call);
 
-        regId = getIntent().getStringExtra("caller_id");
-        final boolean isCalling = getIntent().getBooleanExtra("isCalling", true);
+        mCallerId = getIntent().getStringExtra(Constants.KEY_CALLER_ID);
+        isOutgoingCall = getIntent().getBooleanExtra(Constants.KEY_IS_OUTGOING_CALL, true);
 
         vsv = (GLSurfaceView) findViewById(R.id.glview_call);
         vsv.setPreserveEGLContextOnPause(true);
@@ -72,7 +72,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         VideoRendererGui.setView(vsv, new Runnable() {
             @Override
             public void run() {
-                init(regId, isCalling);
+                init();
             }
         });
 
@@ -83,32 +83,17 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         localRender = VideoRendererGui.create(
                 LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
-
-//        final Intent intent = getIntent();
-//        final String action = intent.getAction();
-//        Log.d(TAG, "action: " + action);
-//
-//        if (Intent.ACTION_VIEW.equals(action)) {
-//            final List<String> segments = intent.getData().getPathSegments();
-//            callerId = segments.get(0);
-//        }
     }
 
-    private void init(String regId, boolean isCalling) {
+    private void init() {
         Point displaySize = new Point();
-        Log.i("Point", displaySize.toString());
+        Log.d(TAG, "Point: " + displaySize.toString());
         getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
                 true, false, displaySize.x, displaySize.y, 30, 1, VIDEO_CODEC_VP9, true, 1, AUDIO_CODEC_OPUS, true);
 
         client = new WebRtcClient(this, params, VideoRendererGui.getEGLContext());
-        if (isCalling) {
-            this.onCallReady(regId, true);
-        } else {
-            this.onCallReady(regId, false);
-        }
-
-
+        this.onCallReady();
     }
 
     @Override
@@ -116,6 +101,12 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         Log.d(TAG, "onClick");
         switch (v.getId()) {
             case R.id.btAnswer:
+                try {
+                    Log.d(TAG, "Answering");
+                    answer();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btEndCall:
                 finish();
@@ -149,39 +140,36 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         super.onDestroy();
     }
 
-    public void answer(String callerId) throws JSONException {
-        Log.i("ANSWER", callerId );
-        client.sendMessage(callerId, "init", null);
-        startCam(callerId);
+    private void answer() throws JSONException {
+        Log.i("ANSWER", mCallerId );
+        client.sendMessage(mCallerId, "init", null);
+        startCam();
     }
 
-    public void call(String callId) {
-//        Intent msg = new Intent(Intent.ACTION_SEND);
-//        msg.putExtra(Intent.EXTRA_TEXT, mSocketAddress + callId);
-//        msg.setType("text/plain");
-//        startActivityForResult(Intent.createChooser(msg, "Call someone :"), VIDEO_CALL_SENT);
-        startCam(callId);
+    private void call() {
+        startCam();
     }
 
-    public void startCam(String callId) {
+    private void startCam() {
         // Camera settings
-        Log.i("Registration Id ", callId);
-        client.start(callId, "android_test");
+        Log.i("Registration Id ", mCallerId);
+        client.start(mCallerId, "android_test");
     }
 
     @Override
-    public void onCallReady(String callId, boolean isCalling) {
-        if (isCalling) {
+    public void onCallReady() {
+        if (isOutgoingCall) {
             Log.d(TAG, "Calling");
-            call(callId);
-        } else {
-            try {
-                Log.d(TAG, "Answering");
-                answer(callId);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            call();
         }
+//        else {
+//            try {
+//                Log.d(TAG, "Answering");
+//                answer(callId);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     @Override
