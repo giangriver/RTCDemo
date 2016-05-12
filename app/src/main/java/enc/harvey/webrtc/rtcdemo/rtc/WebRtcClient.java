@@ -18,8 +18,10 @@ import org.webrtc.VideoCapturer;
 import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoSource;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import enc.harvey.webrtc.rtcdemo.gcm.MessageSender;
 import enc.harvey.webrtc.rtcdemo.listener.OnCommandListener;
@@ -119,7 +121,10 @@ public class WebRtcClient {
         message.put("to", to);
         message.put("type", type);
         message.put("payload", payload);
-        mSender.sendPost(message);
+
+        List<String> tos = new ArrayList<>();
+        tos.add(to);
+        mSender.sendPost(tos, message);
     }
 
     private class MessageHandler implements OnCommandListener {
@@ -336,13 +341,15 @@ public class WebRtcClient {
      *
      * @param name client name
      */
-    public void start(String name) {
+    public void start(String to, String name) {
         setCamera();
         try {
             JSONObject message = new JSONObject();
             message.put("name", name);
 //            client.emit("readyToStream", message);
-            mSender.sendPost(message);
+            List<String> tos = new ArrayList<>();
+            tos.add(to);
+            mSender.sendPost(tos, message);
         } catch (JSONException e) {
             e.printStackTrace();
         }

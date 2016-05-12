@@ -18,7 +18,6 @@ import org.webrtc.VideoRendererGui;
 import java.util.List;
 
 import enc.harvey.webrtc.rtcdemo.R;
-import enc.harvey.webrtc.rtcdemo.gcm.MessageSender;
 import enc.harvey.webrtc.rtcdemo.rtc.PeerConnectionParameters;
 import enc.harvey.webrtc.rtcdemo.rtc.WebRtcClient;
 
@@ -49,6 +48,8 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     private WebRtcClient client;
     private String callerId;
 
+    private String regId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +60,8 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
                         | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                         | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_call);
+
+        regId = getIntent().getStringExtra("regId");
 
         vsv = (GLSurfaceView) findViewById(R.id.glview_call);
         vsv.setPreserveEGLContextOnPause(true);
@@ -104,9 +107,6 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
             case R.id.btAnswer:
                 break;
             case R.id.btEndCall:
-                if(client != null) {
-                    client.onDestroy();
-                }
                 finish();
                 break;
         }
@@ -153,11 +153,12 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     public void startCam() {
         // Camera settings
-        client.start("android_test");
+        client.start(regId, "android_test");
     }
 
     @Override
     public void onCallReady(String callId) {
+        Log.d(TAG, "==============================================================================");
         if (callerId != null) {
             try {
                 answer(callerId);
@@ -181,6 +182,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     @Override
     public void onLocalStream(MediaStream localStream) {
+        Log.d(TAG, "==============================================================================");
         Log.d(TAG, "onLocalStream");
         localStream.videoTracks.get(0).addRenderer(new VideoRenderer(localRender));
         VideoRendererGui.update(localRender,

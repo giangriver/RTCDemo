@@ -1,11 +1,13 @@
 package enc.harvey.webrtc.rtcdemo.gcm;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 
 import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
 
@@ -14,8 +16,16 @@ import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
  */
 public class MessageSender {
 
-    public void sendPost(JSONObject message) {
+    public void sendPost(List<String> to, JSONObject message) {
+        /**
+         * registration_ids
+         * data
+         */
+        JSONObject msg = new JSONObject();
         try {
+            msg.put("registration_ids", to);
+            msg.put("data", message.toString())              ;
+
             URL gcmAPI = new URL(AppConfig.GCM_API);
             HttpURLConnection connection = (HttpURLConnection) gcmAPI.openConnection();
 
@@ -25,10 +35,10 @@ public class MessageSender {
             connection.setDoOutput(true);
 
             OutputStreamWriter wr = new OutputStreamWriter(connection.getOutputStream());
-            wr.write(message.toString());
+            wr.write(msg.toString());
             wr.close();
 
-        } catch (IOException e) {
+        } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
     }

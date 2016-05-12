@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.WakefulBroadcastReceiver;
 
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,15 +26,22 @@ public class MessageReceiver extends WakefulBroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Bundle bundle = intent.getExtras();
-        JSONObject data = new JSONObject();
-        Set<String> keys = bundle.keySet();
-        for (String key : keys) {
-            try {
-                data.put(key, JSONObject.wrap(bundle.get(key)));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+
+        String strData = bundle.getString("data");
+        JSONObject data = null;
+        try {
+            data = new JSONObject(strData);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+//        Set<String> keys = bundle.keySet();
+//        for (String key : keys) {
+//            try {
+//                data.put(key, JSONObject.wrap(bundle.get(key)));
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        }
         listener.onIncommingCall(data);
 
     }
