@@ -6,5 +6,6 @@ import org.json.JSONObject;
  * Created by harold on 11/05/2016.
  */
 public interface OnCallingListener {
-    void onIncommingCall(JSONObject object);
+    void onIncommingCall(String callerId);
+    void onReceiveJSONObject(JSONObject object);
 }

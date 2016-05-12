@@ -18,10 +18,8 @@ import org.webrtc.VideoCapturer;
 import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoSource;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 
 import enc.harvey.webrtc.rtcdemo.gcm.MessageSender;
 import enc.harvey.webrtc.rtcdemo.listener.OnCommandListener;
@@ -40,12 +38,13 @@ public class WebRtcClient {
     private RtcListener mListener;
 //    private Socket client;
     private MessageSender mSender;
+    private MessageHandler msgHandler;
 
     /**
      * Implement this interface to be notified of events.
      */
     public interface RtcListener {
-        void onCallReady(String callId);
+        void onCallReady(String callId, boolean isCalling);
 
         void onStatusChanged(String newStatus);
 
@@ -122,12 +121,14 @@ public class WebRtcClient {
         message.put("type", type);
         message.put("payload", payload);
 
-        List<String> tos = new ArrayList<>();
-        tos.add(to);
-        mSender.sendPost(tos, message);
+        mSender.sendPost(to, message);
     }
 
-    private class MessageHandler implements OnCommandListener {
+    public void callMsgHandlerOnPeer(JSONObject data) {
+        msgHandler.onPeer(data);
+    }
+
+    public class MessageHandler implements OnCommandListener {
         private HashMap<String, Command> commandMap;
 
         private MessageHandler() {
@@ -136,6 +137,7 @@ public class WebRtcClient {
             commandMap.put("offer", new CreateAnswerCommand());
             commandMap.put("answer", new SetRemoteSDPCommand());
             commandMap.put("candidate", new AddIceCandidateCommand());
+            Log.i("Command", "Init successfully");
         }
 
         @Override
@@ -168,7 +170,7 @@ public class WebRtcClient {
         @Override
         public void onId(String regId) {
             Log.d(TAG, "MessageHandler onId: " + regId);
-            mListener.onCallReady(regId);
+//            mListener.onCallReady(regId);
         }
     }
 
@@ -289,8 +291,7 @@ public class WebRtcClient {
         PeerConnectionFactory.initializeAndroidGlobals(listener, true, true,
                 params.videoCodecHwAcceleration, mEGLcontext);
         factory = new PeerConnectionFactory();
-        MessageHandler messageHandler = new MessageHandler();
-
+        msgHandler = new MessageHandler();
 
 
         iceServers.add(new PeerConnection.IceServer("stun:23.21.150.121"));
@@ -299,6 +300,9 @@ public class WebRtcClient {
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
         pcConstraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
+//        MessageHandler messageHandler = new MessageHandler();
+//        messageHandler.onId(regId);
+//        messageHandler.onPeer();
     }
 
     /**
@@ -346,10 +350,9 @@ public class WebRtcClient {
         try {
             JSONObject message = new JSONObject();
             message.put("name", name);
+            message.put("caller_id", to);
 //            client.emit("readyToStream", message);
-            List<String> tos = new ArrayList<>();
-            tos.add(to);
-            mSender.sendPost(tos, message);
+            mSender.sendPost(to, message);
         } catch (JSONException e) {
             e.printStackTrace();
         }

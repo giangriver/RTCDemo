@@ -1,7 +1,6 @@
 package enc.harvey.webrtc.rtcdemo.activity;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -11,17 +10,17 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.webrtc.MediaStream;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
 
-import java.util.List;
-
 import enc.harvey.webrtc.rtcdemo.R;
+import enc.harvey.webrtc.rtcdemo.listener.OnCallingListener;
 import enc.harvey.webrtc.rtcdemo.rtc.PeerConnectionParameters;
 import enc.harvey.webrtc.rtcdemo.rtc.WebRtcClient;
 
-public class CallActivity extends Activity implements WebRtcClient.RtcListener, View.OnClickListener {
+public class CallActivity extends Activity implements WebRtcClient.RtcListener, View.OnClickListener, OnCallingListener {
     private final String TAG = CallActivity.class.getSimpleName();
 
     private static final String VIDEO_CODEC_VP9 = "VP9";
@@ -46,7 +45,8 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     private VideoRenderer.Callbacks localRender;
     private VideoRenderer.Callbacks remoteRender;
     private WebRtcClient client;
-    private String callerId;
+    private String mCallerId;
+    private WebRtcClient.RtcListener rtcListener;
 
     private String regId;
 
@@ -61,15 +61,17 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
                         | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_call);
 
-        regId = getIntent().getStringExtra("regId");
+        regId = getIntent().getStringExtra("caller_id");
+        final boolean isCalling = getIntent().getBooleanExtra("isCalling", true);
 
         vsv = (GLSurfaceView) findViewById(R.id.glview_call);
         vsv.setPreserveEGLContextOnPause(true);
         vsv.setKeepScreenOn(true);
+
         VideoRendererGui.setView(vsv, new Runnable() {
             @Override
             public void run() {
-                init();
+                init(regId, isCalling);
             }
         });
 
@@ -81,23 +83,31 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
                 LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
 
-        final Intent intent = getIntent();
-        final String action = intent.getAction();
-        Log.d(TAG, "action: " + action);
-
-        if (Intent.ACTION_VIEW.equals(action)) {
-            final List<String> segments = intent.getData().getPathSegments();
-            callerId = segments.get(0);
-        }
+//        final Intent intent = getIntent();
+//        final String action = intent.getAction();
+//        Log.d(TAG, "action: " + action);
+//
+//        if (Intent.ACTION_VIEW.equals(action)) {
+//            final List<String> segments = intent.getData().getPathSegments();
+//            callerId = segments.get(0);
+//        }
     }
 
-    private void init() {
+    private void init(String regId, boolean isCalling) {
         Point displaySize = new Point();
+        Log.i("Point", displaySize.toString());
         getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
                 true, false, displaySize.x, displaySize.y, 30, 1, VIDEO_CODEC_VP9, true, 1, AUDIO_CODEC_OPUS, true);
 
         client = new WebRtcClient(this, params, VideoRendererGui.getEGLContext());
+        if (isCalling) {
+            this.onCallReady(regId, true);
+        } else {
+            this.onCallReady(regId, false);
+        }
+
+
     }
 
     @Override
@@ -116,7 +126,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     public void onResume() {
         super.onResume();
         vsv.onResume();
-        if(client != null) {
+        if (client != null) {
             client.onResume();
         }
     }
@@ -125,14 +135,14 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     public void onPause() {
         super.onPause();
         vsv.onPause();
-        if(client != null) {
+        if (client != null) {
             client.onPause();
         }
     }
 
     @Override
     public void onDestroy() {
-        if(client != null) {
+        if (client != null) {
             client.onDestroy();
         }
         super.onDestroy();
@@ -140,7 +150,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     public void answer(String callerId) throws JSONException {
         client.sendMessage(callerId, "init", null);
-        startCam();
+        startCam(callerId);
     }
 
     public void call(String callId) {
@@ -148,25 +158,27 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 //        msg.putExtra(Intent.EXTRA_TEXT, mSocketAddress + callId);
 //        msg.setType("text/plain");
 //        startActivityForResult(Intent.createChooser(msg, "Call someone :"), VIDEO_CALL_SENT);
-        startCam();
+        startCam(callId);
     }
 
-    public void startCam() {
+    public void startCam(String callId) {
         // Camera settings
-        client.start(regId, "android_test");
+        Log.i("Registration Id ", callId);
+        client.start(callId, "android_test");
     }
 
     @Override
-    public void onCallReady(String callId) {
-        Log.d(TAG, "==============================================================================");
-        if (callerId != null) {
+    public void onCallReady(String callId, boolean isCalling) {
+        if (isCalling) {
+            Log.d(TAG, "Calling");
+            call(callId);
+        } else {
             try {
-                answer(callerId);
+                Log.d(TAG, "Answering");
+                answer(callId);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        } else {
-            call(callId);
         }
     }
 
@@ -211,5 +223,15 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
                 LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING,
                 scalingType);
+    }
+
+
+    @Override
+    public void onIncommingCall(final String callerId) {
+    }
+
+    @Override
+    public void onReceiveJSONObject(JSONObject object) {
+//        client.callMsgHandlerOnPeer(object);
     }
 }
