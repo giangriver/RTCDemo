@@ -18,11 +18,17 @@ public class MessageReceiver extends WakefulBroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Bundle bundle = intent.getExtras();
-        final String strData = bundle.getString(Constants.KEY_CALLER_ID);
-        Log.d(TAG, "RECEIVER data: " + strData);
-        if (strData != null) {
+        Log.d(TAG, "==============================================================================");
+        Log.d(TAG, "RECEIVER data: " + bundle.getString("data"));
+        Log.d(TAG, "RECEIVER message: " + bundle.getString("message"));
+        Log.d(TAG, "RECEIVER to: " + bundle.getString("to"));
+        Log.d(TAG, "RECEIVER type: " + bundle.getString("type"));
+        Log.d(TAG, "RECEIVER payload: " + bundle.getString("payload"));
+        Log.d(TAG, "==============================================================================");
+        final String callerId = bundle.getString(Constants.KEY_CALLER_ID);
+        if (callerId != null) {
             Intent broadcastIntent = new Intent("GCMMessage");
-            broadcastIntent.putExtra(Constants.KEY_CALLER_ID, strData);
+            broadcastIntent.putExtra(Constants.KEY_CALLER_ID, callerId);
             LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
         }
     }

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -50,6 +51,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     private String mCallerId;
     private boolean isOutgoingCall = false;
+    private ImageButton btAnswer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +66,11 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
         mCallerId = getIntent().getStringExtra(Constants.KEY_CALLER_ID);
         isOutgoingCall = getIntent().getBooleanExtra(Constants.KEY_IS_OUTGOING_CALL, true);
+
+        btAnswer = (ImageButton) findViewById(R.id.btAnswer);
+        if (isOutgoingCall) {
+            btAnswer.setVisibility(View.GONE);
+        }
 
         vsv = (GLSurfaceView) findViewById(R.id.glview_call);
         vsv.setPreserveEGLContextOnPause(true);
@@ -101,6 +108,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         Log.d(TAG, "onClick");
         switch (v.getId()) {
             case R.id.btAnswer:
+                btAnswer.setVisibility(View.GONE);
                 try {
                     Log.d(TAG, "Answering");
                     answer();

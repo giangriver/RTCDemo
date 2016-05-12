@@ -17,38 +17,43 @@ import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
  */
 public class MessageSender {
 
-    public void sendPost(String to, JSONObject message) {
+    public void sendPost(final String to, final JSONObject message) {
         /**
          * registration_ids
          * data
          */
-        JSONObject msg = new JSONObject();
-        try {
-            msg.put("to", to);
-            msg.put("data", message);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                JSONObject msg = new JSONObject();
+                try {
+                    msg.put("to", to);
+                    msg.put("data", message);
 
-            URL gcmAPI = new URL(AppConfig.GCM_API);
-            HttpURLConnection connection = (HttpURLConnection) gcmAPI.openConnection();
+                    URL gcmAPI = new URL(AppConfig.GCM_API);
+                    HttpURLConnection connection = (HttpURLConnection) gcmAPI.openConnection();
 
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Authorization", "key=" + AppConfig.API_KEY);
-            connection.setDoOutput(true);
+                    connection.setRequestMethod("POST");
+                    connection.setRequestProperty("Content-Type", "application/json");
+                    connection.setRequestProperty("Authorization", "key=" + AppConfig.API_KEY);
+                    connection.setDoOutput(true);
 
-            OutputStream outputStream = connection.getOutputStream();
-            outputStream.write(msg.toString().getBytes());
-            outputStream.close();
+                    OutputStream outputStream = connection.getOutputStream();
+                    outputStream.write(msg.toString().getBytes());
+                    outputStream.close();
 
-            int responseCode = connection.getResponseCode();
-            if (responseCode == 200) {
-                Log.i("Request Status", "This is success response status from server: " + responseCode);
-            } else {
-                Log.i("Request Status", "This is failure response status from server: " + responseCode);
+                    int responseCode = connection.getResponseCode();
+                    if (responseCode == 200) {
+                        Log.i("Request Status", "This is success response status from server: " + responseCode);
+                    } else {
+                        Log.i("Request Status", "This is failure response status from server: " + responseCode);
+                    }
+
+
+                } catch (IOException | JSONException e) {
+                    e.printStackTrace();
+                }
             }
-
-
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
+        }).start();
     }
 }

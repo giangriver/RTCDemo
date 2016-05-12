@@ -169,7 +169,7 @@ public class WebRtcClient {
         @Override
         public void onId(String regId) {
             Log.d(TAG, "MessageHandler onId: " + regId);
-//            mListener.onCallReady(regId);
+            mListener.onCallReady();
         }
     }
 
