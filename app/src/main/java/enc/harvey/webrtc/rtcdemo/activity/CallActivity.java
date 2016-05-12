@@ -1,6 +1,7 @@
 package enc.harvey.webrtc.rtcdemo.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -149,6 +150,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     }
 
     public void answer(String callerId) throws JSONException {
+        Log.i("ANSWER", callerId );
         client.sendMessage(callerId, "init", null);
         startCam(callerId);
     }
@@ -227,7 +229,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
 
     @Override
-    public void onIncommingCall(final String callerId) {
+    public void onIncommingCall(final String callerId, Context context) {
     }
 
     @Override

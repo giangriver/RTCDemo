@@ -1,8 +1,12 @@
 package enc.harvey.webrtc.rtcdemo.activity;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -13,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import enc.harvey.webrtc.rtcdemo.R;
-
 import enc.harvey.webrtc.rtcdemo.adapter.ContactRecyclerViewAdapter;
 import enc.harvey.webrtc.rtcdemo.gcm.RegistrationIdManager;
 import enc.harvey.webrtc.rtcdemo.listener.OnCallingListener;
@@ -53,19 +56,22 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new ContactRecyclerViewAdapter(userList, this));
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onNotice, new IntentFilter("GCMMessage"));
+
 
     }
 
     @Override
     public void onClickCallUser(User user) {
         Log.i(getClass().getSimpleName(), user.getUserName());
-        openCallActivity(user.getRegistrationId(), true);
+        openCallActivity(user.getRegistrationId(), true, getApplicationContext());
     }
 
     @Override
-    public void onIncommingCall(String callerId) {
-        caller_id = callerId;
-        openCallActivity(caller_id, false);
+    public void onIncommingCall(String callerId, Context context) {
+//        caller_id = callerId;
+//        Log.i(TAG, caller_id + ", " + context.toString());
+//        openCallActivity(caller_id, false, context);
     }
 
     @Override
@@ -73,8 +79,17 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
 
     }
 
-    private void openCallActivity(String caller_id, boolean isCalling) {
-        Intent intent = new Intent(this, CallActivity.class);
+    private BroadcastReceiver onNotice =  new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            caller_id = intent.getStringExtra("caller_id");
+            openCallActivity(caller_id, false, context);
+            Log.i("TAO LA HAROLD", "SDSDSDSDJSHDJKHSJKDHSJKDHK");
+        }
+    };
+
+    private void openCallActivity(String caller_id, boolean isCalling, Context context) {
+        Intent intent = new Intent(context.getApplicationContext(), CallActivity.class);
         intent.putExtra("caller_id", caller_id);
         intent.putExtra("isCalling", isCalling);
         startActivity(intent);

@@ -27,7 +27,7 @@ public class MessageService  extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Bundle bundle = intent.getExtras();
         if(bundle != null && !bundle.isEmpty()){
-            sendNotification(bundle.getString("title"), bundle.getString("message"));
+//            sendNotification(bundle.getString("title"), bundle.getString("message"));
         }
         MessageReceiver.completeWakefulIntent(intent);
     }

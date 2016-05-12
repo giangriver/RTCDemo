@@ -18,8 +18,10 @@ import org.webrtc.VideoCapturer;
 import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoSource;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import enc.harvey.webrtc.rtcdemo.gcm.MessageSender;
 import enc.harvey.webrtc.rtcdemo.listener.OnCommandListener;
@@ -36,7 +38,7 @@ public class WebRtcClient {
     private MediaStream localMS;
     private VideoSource videoSource;
     private RtcListener mListener;
-//    private Socket client;
+    //    private Socket client;
     private MessageSender mSender;
     private MessageHandler msgHandler;
 
@@ -120,8 +122,9 @@ public class WebRtcClient {
         message.put("to", to);
         message.put("type", type);
         message.put("payload", payload);
-
-        mSender.sendPost(to, message);
+        List<String> tos = new ArrayList<>();
+        tos.add(to);
+        mSender.sendPost(tos, message);
     }
 
     public void callMsgHandlerOnPeer(JSONObject data) {
@@ -352,7 +355,9 @@ public class WebRtcClient {
             message.put("name", name);
             message.put("caller_id", to);
 //            client.emit("readyToStream", message);
-            mSender.sendPost(to, message);
+            List<String> tos = new ArrayList<>();
+            tos.add(to);
+            mSender.sendPost(tos, message);
         } catch (JSONException e) {
             e.printStackTrace();
         }
