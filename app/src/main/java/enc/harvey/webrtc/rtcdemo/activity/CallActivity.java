@@ -186,12 +186,12 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     private void startCam() {
         // Camera settings
         Log.i("Registration Id ", mCallerId);
-        if (isOutgoingCall) {
-            client.start(mCallerId, "android_test");
-        } else {
-            client.start(mCalleeId, "android_test");
-
-        }
+//        if (isOutgoingCall) {
+        client.start(mCalleeId, mCallerId, "android_test");
+//        } else {
+//            client.start(mCalleeId, "android_test");
+//
+//        }
     }
 
     @Override
