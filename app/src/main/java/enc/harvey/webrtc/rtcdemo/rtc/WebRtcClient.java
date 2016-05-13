@@ -261,6 +261,9 @@ public class WebRtcClient {
             this.id = id;
             this.endPoint = endPoint;
 
+            if (localMS == null) {
+                setCamera();
+            }
             pc.addStream(localMS); //, new MediaConstraints()
 
             mListener.onStatusChanged("CONNECTING");
@@ -299,9 +302,6 @@ public class WebRtcClient {
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
         pcConstraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
-//        MessageHandler messageHandler = new MessageHandler();
-//        messageHandler.onId(regId);
-//        messageHandler.onPeer();
     }
 
     /**

@@ -1,10 +1,14 @@
 package enc.harvey.webrtc.rtcdemo.activity;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -65,6 +69,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         setContentView(R.layout.activity_call);
 
         mCallerId = getIntent().getStringExtra(Constants.KEY_CALLER_ID);
+        Log.d(TAG, "onCreate mCallerId: " + mCallerId );
         isOutgoingCall = getIntent().getBooleanExtra(Constants.KEY_IS_OUTGOING_CALL, true);
 
         btAnswer = (ImageButton) findViewById(R.id.btAnswer);
@@ -125,6 +130,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     @Override
     public void onResume() {
         super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(gcmMsgReceiver, new IntentFilter("gcmMsgReceiver"));
         vsv.onResume();
         if (client != null) {
             client.onResume();
@@ -142,14 +148,29 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     @Override
     public void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(gcmMsgReceiver);
         if (client != null) {
             client.onDestroy();
         }
         super.onDestroy();
     }
 
+    private BroadcastReceiver gcmMsgReceiver =  new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String jsonMsg = intent.getStringExtra(Constants.KEY_JSON_MSG);
+            Log.d(TAG, "gcmMsgReceiver: " + jsonMsg);
+            try {
+                JSONObject obj = new JSONObject(jsonMsg);
+                client.callMsgHandlerOnPeer(obj);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
     private void answer() throws JSONException {
-        Log.i("ANSWER", mCallerId );
+        Log.d(TAG, "ANSWER mCallerId: " + mCallerId );
         client.sendMessage(mCallerId, "init", null);
 
     }
@@ -166,7 +187,18 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     @Override
     public void onCallReady() {
-        startCam();
+        if (isOutgoingCall) {
+            Log.d(TAG, "Calling");
+            call();
+        }
+//        else {
+//            try {
+//                Log.d(TAG, "Answering");
+//                answer(callId);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     @Override

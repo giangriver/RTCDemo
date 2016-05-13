@@ -94,6 +94,7 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
         @Override
         public void onReceive(Context context, Intent intent) {
             String caller_id = intent.getStringExtra(Constants.KEY_CALLER_ID);
+            Log.d(TAG, "onNotice caller_id: " + caller_id);
             openCallActivity(caller_id, false);
         }
     };
