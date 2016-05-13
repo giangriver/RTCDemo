@@ -19,11 +19,9 @@ public class MessageReceiver extends WakefulBroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Bundle bundle = intent.getExtras();
         Log.d(TAG, "==============================================================================");
-        Log.d(TAG, "RECEIVER data: " + bundle.getString("data"));
-        Log.d(TAG, "RECEIVER message: " + bundle.getString("message"));
-        Log.d(TAG, "RECEIVER to: " + bundle.getString("to"));
-        Log.d(TAG, "RECEIVER type: " + bundle.getString("type"));
-        Log.d(TAG, "RECEIVER payload: " + bundle.getString("payload"));
+        for (String key: bundle.keySet()) {
+            Log.d (TAG, "KEY: " + key + " : " + bundle.get(key));
+        }
         Log.d(TAG, "==============================================================================");
         final String callerId = bundle.getString(Constants.KEY_CALLER_ID);
         if (callerId != null) {

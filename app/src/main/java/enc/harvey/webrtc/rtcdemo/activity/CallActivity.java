@@ -151,7 +151,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     private void answer() throws JSONException {
         Log.i("ANSWER", mCallerId );
         client.sendMessage(mCallerId, "init", null);
-        startCam();
+
     }
 
     private void call() {
@@ -166,18 +166,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     @Override
     public void onCallReady() {
-        if (isOutgoingCall) {
-            Log.d(TAG, "Calling");
-            call();
-        }
-//        else {
-//            try {
-//                Log.d(TAG, "Answering");
-//                answer(callId);
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        startCam();
     }
 
     @Override
