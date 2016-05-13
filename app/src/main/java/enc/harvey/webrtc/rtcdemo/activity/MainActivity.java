@@ -36,6 +36,7 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
         registrationIdManager.registerIfNeeded(new RegistrationIdManager.RegistrationCompletedHandler() {
             @Override
             public void onSuccess(String registrationId, boolean isNewRegistration) {
+                AppConfig.MY_REG_ID = registrationId;
                 Log.d(TAG, "Registration Id: " + registrationId);
             }
 
@@ -75,7 +76,7 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
     @Override
     public void onClickCallUser(User user) {
         Log.i(getClass().getSimpleName(), user.getUserName());
-        openCallActivity(user.getRegistrationId(), true);
+        openCallActivity(AppConfig.MY_REG_ID, user.getRegistrationId(), true);
     }
 
     @Override
@@ -90,18 +91,19 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
 
     }
 
-    private BroadcastReceiver onNotice =  new BroadcastReceiver() {
+    private BroadcastReceiver onNotice = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String caller_id = intent.getStringExtra(Constants.KEY_CALLER_ID);
             Log.d(TAG, "onNotice caller_id: " + caller_id);
-            openCallActivity(caller_id, false);
+            openCallActivity(caller_id, AppConfig.MY_REG_ID, false);
         }
     };
 
-    private void openCallActivity(String caller_id, boolean isOutgoingCall) {
+    private void openCallActivity(String caller_id, String callee_id, boolean isOutgoingCall) {
         Intent intent = new Intent(this, CallActivity.class);
         intent.putExtra(Constants.KEY_CALLER_ID, caller_id);
+        intent.putExtra(Constants.KEY_CALLEE_ID, callee_id);
         intent.putExtra(Constants.KEY_IS_OUTGOING_CALL, isOutgoingCall);
         startActivity(intent);
     }

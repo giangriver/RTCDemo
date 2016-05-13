@@ -54,6 +54,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     private WebRtcClient client;
 
     private String mCallerId;
+    private String mCalleeId;
     private boolean isOutgoingCall = false;
     private ImageButton btAnswer;
 
@@ -69,7 +70,10 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         setContentView(R.layout.activity_call);
 
         mCallerId = getIntent().getStringExtra(Constants.KEY_CALLER_ID);
-        Log.d(TAG, "onCreate mCallerId: " + mCallerId );
+        mCalleeId = getIntent().getStringExtra(Constants.KEY_CALLEE_ID);
+        Log.d(TAG, "onCreate mCallerId: " + mCallerId);
+        Log.d(TAG, "onCreate mCalleeId: " + mCalleeId);
+
         isOutgoingCall = getIntent().getBooleanExtra(Constants.KEY_IS_OUTGOING_CALL, true);
 
         btAnswer = (ImageButton) findViewById(R.id.btAnswer);
@@ -155,7 +159,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         super.onDestroy();
     }
 
-    private BroadcastReceiver gcmMsgReceiver =  new BroadcastReceiver() {
+    private BroadcastReceiver gcmMsgReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String jsonMsg = intent.getStringExtra(Constants.KEY_JSON_MSG);
@@ -170,7 +174,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     };
 
     private void answer() throws JSONException {
-        Log.d(TAG, "ANSWER mCallerId: " + mCallerId );
+        Log.d(TAG, "ANSWER mCallerId: " + mCallerId);
         client.sendMessage(mCallerId, "init", null);
 
     }
@@ -182,7 +186,12 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     private void startCam() {
         // Camera settings
         Log.i("Registration Id ", mCallerId);
-        client.start(mCallerId, "android_test");
+        if (isOutgoingCall) {
+            client.start(mCallerId, "android_test");
+        } else {
+            client.start(mCalleeId, "android_test");
+
+        }
     }
 
     @Override
