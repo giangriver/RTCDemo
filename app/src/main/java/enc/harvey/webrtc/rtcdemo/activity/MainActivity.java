@@ -90,7 +90,6 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
         Intent intent = new Intent(this, CallActivity.class);
         intent.putExtra(Constants.KEY_CALLER_ID, caller_id);
         intent.putExtra(Constants.KEY_CALLEE_ID, callee_id);
-        intent.putExtra(Constants.KEY_IS_OUTGOING_CALL, isOutgoingCall);
         startActivity(intent);
     }
 }

@@ -24,6 +24,7 @@ import java.util.LinkedList;
 
 import enc.harvey.webrtc.rtcdemo.gcm.MessageSender;
 import enc.harvey.webrtc.rtcdemo.listener.OnCommandListener;
+import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
 
 public class WebRtcClient {
     private final static String TAG = WebRtcClient.class.getCanonicalName();
@@ -118,7 +119,7 @@ public class WebRtcClient {
      */
     public void sendMessage(String to, String type, JSONObject payload) throws JSONException {
         JSONObject message = new JSONObject();
-//        message.put("to", to);
+        message.put("sent_from", AppConfig.MY_REG_ID);
         message.put("type", type);
         message.put("payload", payload);
         mSender.sendPost(to, message);
@@ -144,11 +145,14 @@ public class WebRtcClient {
         public void onPeer(JSONObject data) {
             Log.d(TAG, "MessageHandler onPeer: " + data.toString());
             try {
-                String from = data.getString("from");
+                String from = data.getString("sent_from");
                 String type = data.getString("type");
                 JSONObject payload = null;
                 if (!type.equals("init")) {
-                    payload = data.getJSONObject("payload");
+                    String str = data.getString("payload");
+//                    payload = data.getJSONObject("payload");
+                    payload = new JSONObject(str);
+                    Log.d(TAG, "payload: " + payload.toString());
                 }
                 // if peer is unknown, try to add him
                 if (!peers.containsKey(from)) {
