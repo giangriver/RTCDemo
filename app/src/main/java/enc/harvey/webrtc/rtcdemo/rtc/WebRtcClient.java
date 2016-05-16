@@ -9,6 +9,7 @@ import org.webrtc.AudioSource;
 import org.webrtc.DataChannel;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
+import org.webrtc.MediaSource;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
@@ -117,7 +118,7 @@ public class WebRtcClient {
      */
     public void sendMessage(String to, String type, JSONObject payload) throws JSONException {
         JSONObject message = new JSONObject();
-        message.put("to", to);
+//        message.put("to", to);
         message.put("type", type);
         message.put("payload", payload);
         mSender.sendPost(to, message);
@@ -322,10 +323,17 @@ public class WebRtcClient {
      * Call this method in Activity.onDestroy()
      */
     public void onDestroy() {
+        Log.d(TAG, "onDestroy is called");
         for (Peer peer : peers.values()) {
+            Log.d(TAG, "onDestroy is disposing peer");
             peer.pc.dispose();
         }
-        if (videoSource != null) videoSource.dispose();
+        if (videoSource != null) {
+            if (videoSource.state() != MediaSource.State.ENDED) {
+                videoSource.stop();
+            }
+            videoSource.dispose();
+        }
         factory.dispose();
 //        client.disconnect();
 //        client.close();
@@ -342,19 +350,18 @@ public class WebRtcClient {
      * Set up the local stream and notify the signaling server.
      * Call this method after onCallReady.
      *
-     * @param name client name
      */
-    public void start(String to,String from ,String name) {
+    public void start() {
         setCamera();
-        try {
-            JSONObject message = new JSONObject();
-            message.put("name", name);
-            message.put("caller_id", from);
-//            client.emit("readyToStream", message);
-            mSender.sendPost(to, message);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            JSONObject message = new JSONObject();
+//            message.put("name", name);
+//            message.put("caller_id", from);
+////            client.emit("readyToStream", message);
+//            mSender.sendPost(to, message);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
     }
 
     private void setCamera() {

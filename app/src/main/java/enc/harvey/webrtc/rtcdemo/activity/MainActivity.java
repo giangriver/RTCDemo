@@ -11,21 +11,18 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import enc.harvey.webrtc.rtcdemo.R;
 import enc.harvey.webrtc.rtcdemo.adapter.ContactRecyclerViewAdapter;
 import enc.harvey.webrtc.rtcdemo.gcm.RegistrationIdManager;
-import enc.harvey.webrtc.rtcdemo.listener.OnCallingListener;
 import enc.harvey.webrtc.rtcdemo.listener.OnUserListInteractionListener;
 import enc.harvey.webrtc.rtcdemo.model.User;
 import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
 import enc.harvey.webrtc.rtcdemo.utils.Constants;
 
-public class MainActivity extends Activity implements OnUserListInteractionListener, OnCallingListener {
+public class MainActivity extends Activity implements OnUserListInteractionListener {
     private final String TAG = MainActivity.class.getSimpleName();
 
     @Override
@@ -50,11 +47,13 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
         User user2 = new User(2, "river galaxy S3", "", "e0lrKXqo8ec:APA91bFXohgZsv11T_zdKz8dBczJFRspmI7mNowaIjPl-8iwOlPH35y1S5cEbiwh8vcS9uYwVFBmg33u8m1Knkr4Qycabzv3PJHYpqZEIcoYS31jPTp0VbZ4QV_fGxG1CEmZ7nEfHvuz");
         User user3 = new User(3, "test", "", "eo4VxPqEEW4:APA91bFFDdxUKmvizkOpiGbruAQezLGaQFoWlWYyO9cHyYOQNI4iZnb79e2c_hKItahQ6TxsRtLlOiVxlCOHKbQOJWlZDsJgCE0PYp-N6sFsUTSEjGrcFmUkPRXLJk1yPgAlQVh408v9");
         User user4 = new User(4, "river nexus 4", "", "cDwZ9gVw-x8:APA91bGm1W9BwXWCMstAY0-iKeagrpspjTZJx8wsN670Bj_I2PDxoWAKs3qsc2ds-07R_EykmelVGyJx572VK9fsTpDC0zCagxVSzpz_7lmnFImmmc_CztJDKEl6Kw0aJmGt3-M8zzfd");
+        User user5 = new User(5, "river nexus 5", "", "cC90f7WfKJA:APA91bHN8Rd4sB6hMZHvRpcXqG7avN8e1ez0bQmGy770K6_VjaTiSBH2PHvYWUkafJ4WuDiy6eMK6OEVxImdx5__zM4exLdk-S7W-Z13IA_D0fACEPqNQX_6dqYTm6vd-Z5KGQEtiADH");
         List<User> userList = new ArrayList<>();
         userList.add(user1);
         userList.add(user2);
         userList.add(user3);
         userList.add(user4);
+        userList.add(user5);
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -64,38 +63,25 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
     @Override
     protected void onResume() {
         super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(onNotice, new IntentFilter("GCMMessage"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(callingRequestReceiver, new IntentFilter(Constants.FILTER_RECEIVE_CALLING_REQUEST));
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(onNotice);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(callingRequestReceiver);
     }
 
     @Override
     public void onClickCallUser(User user) {
-        Log.i(getClass().getSimpleName(), user.getUserName());
+        Log.d(TAG, "onClickCallUser: " + user.getUserName());
         openCallActivity(AppConfig.MY_REG_ID, user.getRegistrationId(), true);
     }
 
-    @Override
-    public void onIncommingCall(String callerId, Context context) {
-//        caller_id = callerId;
-//        Log.i(TAG, caller_id + ", " + context.toString());
-//        openCallActivity(caller_id, false, context);
-    }
-
-    @Override
-    public void onReceiveJSONObject(JSONObject object) {
-
-    }
-
-    private BroadcastReceiver onNotice = new BroadcastReceiver() {
+    private BroadcastReceiver callingRequestReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String caller_id = intent.getStringExtra(Constants.KEY_CALLER_ID);
-            Log.d(TAG, "onNotice caller_id: " + caller_id);
             openCallActivity(caller_id, AppConfig.MY_REG_ID, false);
         }
     };

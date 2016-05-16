@@ -21,27 +21,31 @@ public class MessageReceiver extends WakefulBroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Bundle bundle = intent.getExtras();
-        Log.d(TAG, "==============================================================================");
-        JSONObject message = new JSONObject();
-        for (String key: bundle.keySet()) {
-            Log.d (TAG, "KEY: " + key + " : " + bundle.get(key));
-            try {
+        try {
+            Log.d(TAG, "=========================================================================");
+            JSONObject message = new JSONObject();
+            for (String key : bundle.keySet()) {
+                Log.d(TAG, "KEY: " + key + " : " + bundle.get(key));
                 message.put(key, bundle.get(key));
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
-        }
-        Log.d(TAG, "==============================================================================");
-        final String callerId = bundle.getString(Constants.KEY_CALLER_ID);
-        if (callerId != null) {
-            Intent broadcastIntent = new Intent("GCMMessage");
-            broadcastIntent.putExtra(Constants.KEY_CALLER_ID, callerId);
-            LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
-        }
-        if (message.toString() != null && !message.toString().trim().equals("")) {
-            Intent broadcastIntent = new Intent("gcmMsgReceiver");
-            broadcastIntent.putExtra(Constants.KEY_JSON_MSG, message.toString());
-            LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
+            Log.d(TAG, "=========================================================================");
+
+            String type = bundle.getString("type", null);
+            if (type.equals("request")) {
+                JSONObject payload = new JSONObject(bundle.getString("payload"));
+                String callerId = payload.getString(Constants.KEY_CALLER_ID);
+                Intent broadcastIntent = new Intent(Constants.FILTER_RECEIVE_CALLING_REQUEST);
+                broadcastIntent.putExtra(Constants.KEY_CALLER_ID, callerId);
+                LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
+            }
+
+            if (message.toString() != null && !message.toString().trim().equals("")) {
+                Intent broadcastIntent = new Intent("gcmMsgReceiver");
+                broadcastIntent.putExtra(Constants.KEY_JSON_MSG, message.toString());
+                LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 }

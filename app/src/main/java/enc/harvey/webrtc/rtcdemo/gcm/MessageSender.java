@@ -25,10 +25,11 @@ public class MessageSender {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                JSONObject msg = new JSONObject();
                 try {
+                    JSONObject msg = new JSONObject();
                     msg.put("to", to);
                     msg.put("data", message);
+                    Log.d("MessageSender", "Send msg: " + msg.toString());
 
                     URL gcmAPI = new URL(AppConfig.GCM_API);
                     HttpURLConnection connection = (HttpURLConnection) gcmAPI.openConnection();
@@ -48,8 +49,6 @@ public class MessageSender {
                     } else {
                         Log.i("Request Status", "This is failure response status from server: " + responseCode);
                     }
-
-
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }

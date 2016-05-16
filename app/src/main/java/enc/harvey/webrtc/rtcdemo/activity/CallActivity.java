@@ -25,6 +25,7 @@ import enc.harvey.webrtc.rtcdemo.R;
 import enc.harvey.webrtc.rtcdemo.listener.OnCallingListener;
 import enc.harvey.webrtc.rtcdemo.rtc.PeerConnectionParameters;
 import enc.harvey.webrtc.rtcdemo.rtc.WebRtcClient;
+import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
 import enc.harvey.webrtc.rtcdemo.utils.Constants;
 
 public class CallActivity extends Activity implements WebRtcClient.RtcListener, View.OnClickListener, OnCallingListener {
@@ -55,7 +56,6 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     private String mCallerId;
     private String mCalleeId;
-    private boolean isOutgoingCall = false;
     private ImageButton btAnswer;
 
     @Override
@@ -69,15 +69,13 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
                         | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_call);
 
-        mCallerId = getIntent().getStringExtra(Constants.KEY_CALLER_ID);
-        mCalleeId = getIntent().getStringExtra(Constants.KEY_CALLEE_ID);
+        this.mCallerId = getIntent().getStringExtra(Constants.KEY_CALLER_ID);
+        this.mCalleeId = getIntent().getStringExtra(Constants.KEY_CALLEE_ID);
         Log.d(TAG, "onCreate mCallerId: " + mCallerId);
         Log.d(TAG, "onCreate mCalleeId: " + mCalleeId);
 
-        isOutgoingCall = getIntent().getBooleanExtra(Constants.KEY_IS_OUTGOING_CALL, true);
-
         btAnswer = (ImageButton) findViewById(R.id.btAnswer);
-        if (isOutgoingCall) {
+        if (mCallerId.equals(AppConfig.MY_REG_ID)) {
             btAnswer.setVisibility(View.GONE);
         }
 
@@ -118,12 +116,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         switch (v.getId()) {
             case R.id.btAnswer:
                 btAnswer.setVisibility(View.GONE);
-                try {
-                    Log.d(TAG, "Answering");
-                    answer();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                answer();
                 break;
             case R.id.btEndCall:
                 finish();
@@ -173,41 +166,38 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         }
     };
 
-    private void answer() throws JSONException {
+    private void answer() {
         Log.d(TAG, "ANSWER mCallerId: " + mCallerId);
-        client.sendMessage(mCallerId, "init", null);
-
+        try {
+            client.sendMessage(mCallerId, "init", null);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void call() {
+    public void call() {
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put(Constants.KEY_CALLER_ID, mCallerId);
+            client.sendMessage(mCalleeId, "request", obj);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         startCam();
     }
 
     private void startCam() {
         // Camera settings
-        Log.i("Registration Id ", mCallerId);
-//        if (isOutgoingCall) {
-        client.start(mCalleeId, mCallerId, "android_test");
-//        } else {
-//            client.start(mCalleeId, "android_test");
-//
-//        }
+        client.start();
     }
 
     @Override
     public void onCallReady() {
-        if (isOutgoingCall) {
-            Log.d(TAG, "Calling");
+        if (mCallerId.equals(AppConfig.MY_REG_ID)) {
             call();
+        } else {
+            startCam();
         }
-//        else {
-//            try {
-//                Log.d(TAG, "Answering");
-//                answer(callId);
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//        }
     }
 
     @Override
