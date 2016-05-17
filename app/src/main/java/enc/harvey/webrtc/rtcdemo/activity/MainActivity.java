@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -33,7 +34,9 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
         registrationIdManager.registerIfNeeded(new RegistrationIdManager.RegistrationCompletedHandler() {
             @Override
             public void onSuccess(String registrationId, boolean isNewRegistration) {
-                AppConfig.MY_REG_ID = registrationId;
+                SharedPreferences.Editor editor = getSharedPreferences(AppConfig.PRE_NAME, MODE_PRIVATE).edit();
+                editor.putString("reg_id", registrationId);
+                editor.apply();
                 Log.d(TAG, "Registration Id: " + registrationId);
             }
 
@@ -75,14 +78,20 @@ public class MainActivity extends Activity implements OnUserListInteractionListe
     @Override
     public void onClickCallUser(User user) {
         Log.d(TAG, "onClickCallUser: " + user.getUserName());
-        openCallActivity(AppConfig.MY_REG_ID, user.getRegistrationId(), true);
+        SharedPreferences prefs = getSharedPreferences(AppConfig.PRE_NAME, MODE_PRIVATE);
+        String regId = prefs.getString("reg_id", null);
+        if (regId != null) {
+            openCallActivity(regId, user.getRegistrationId(), true);
+        }
     }
 
     private BroadcastReceiver callingRequestReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String caller_id = intent.getStringExtra(Constants.KEY_CALLER_ID);
-            openCallActivity(caller_id, AppConfig.MY_REG_ID, false);
+            SharedPreferences prefs = getSharedPreferences(AppConfig.PRE_NAME, MODE_PRIVATE);
+            String regId = prefs.getString("reg_id", null);
+            openCallActivity(caller_id, regId, false);
         }
     };
 

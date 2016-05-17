@@ -1,5 +1,7 @@
 package enc.harvey.webrtc.rtcdemo.rtc;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.opengl.EGLContext;
 import android.util.Log;
 
@@ -41,6 +43,7 @@ public class WebRtcClient {
     //    private Socket client;
     private MessageSender mSender;
     private MessageHandler msgHandler;
+    private Context context;
 
     /**
      * Implement this interface to be notified of events.
@@ -118,8 +121,10 @@ public class WebRtcClient {
      * @throws JSONException
      */
     public void sendMessage(String to, String type, JSONObject payload) throws JSONException {
+        SharedPreferences prefs = context.getSharedPreferences(AppConfig.PRE_NAME, Context.MODE_PRIVATE);
+        String regId = prefs.getString("reg_id", null);
         JSONObject message = new JSONObject();
-        message.put("sent_from", AppConfig.MY_REG_ID);
+        message.put("sent_from", regId);
         message.put("type", type);
         message.put("payload", payload);
         mSender.sendPost(to, message);
@@ -291,9 +296,10 @@ public class WebRtcClient {
         endPoints[peer.endPoint] = false;
     }
 
-    public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EGLContext mEGLcontext) {
+    public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EGLContext mEGLcontext, Context mContext) {
         mListener = listener;
         pcParams = params;
+        context = mContext;
         mSender = new MessageSender();
         PeerConnectionFactory.initializeAndroidGlobals(listener, true, true,
                 params.videoCodecHwAcceleration, mEGLcontext);
@@ -339,8 +345,6 @@ public class WebRtcClient {
             videoSource.dispose();
         }
         factory.dispose();
-//        client.disconnect();
-//        client.close();
     }
 
     private int findEndPoint() {
@@ -353,19 +357,9 @@ public class WebRtcClient {
      * <p/>
      * Set up the local stream and notify the signaling server.
      * Call this method after onCallReady.
-     *
      */
     public void start() {
         setCamera();
-//        try {
-//            JSONObject message = new JSONObject();
-//            message.put("name", name);
-//            message.put("caller_id", from);
-////            client.emit("readyToStream", message);
-//            mSender.sendPost(to, message);
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
     }
 
     private void setCamera() {

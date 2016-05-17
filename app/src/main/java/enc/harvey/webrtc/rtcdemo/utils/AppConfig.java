@@ -11,5 +11,6 @@ public class AppConfig {
 
     public static final String GCM_API = "https://android.googleapis.com/gcm/send";
 
-    public static String MY_REG_ID ;
+    public static final String PRE_NAME = "web-rtc";
+
 }

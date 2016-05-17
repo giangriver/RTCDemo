@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -57,6 +58,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     private String mCallerId;
     private String mCalleeId;
     private ImageButton btAnswer;
+    private String regId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,9 +75,11 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         this.mCalleeId = getIntent().getStringExtra(Constants.KEY_CALLEE_ID);
         Log.d(TAG, "onCreate mCallerId: " + mCallerId);
         Log.d(TAG, "onCreate mCalleeId: " + mCalleeId);
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(AppConfig.PRE_NAME, Context.MODE_PRIVATE);
+        regId = prefs.getString("reg_id", null);
 
         btAnswer = (ImageButton) findViewById(R.id.btAnswer);
-        if (mCallerId.equals(AppConfig.MY_REG_ID)) {
+        if (mCallerId.equals(regId)) {
             btAnswer.setVisibility(View.GONE);
         }
 
@@ -106,7 +110,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         PeerConnectionParameters params = new PeerConnectionParameters(
                 true, false, displaySize.x, displaySize.y, 30, 1, VIDEO_CODEC_VP9, true, 1, AUDIO_CODEC_OPUS, true);
 
-        client = new WebRtcClient(this, params, VideoRendererGui.getEGLContext());
+        client = new WebRtcClient(this, params, VideoRendererGui.getEGLContext(), getApplicationContext());
         this.onCallReady();
     }
 
@@ -193,7 +197,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     @Override
     public void onCallReady() {
-        if (mCallerId.equals(AppConfig.MY_REG_ID)) {
+        if (mCallerId.equals(regId)) {
             call();
         } else {
             startCam();
