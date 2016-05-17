@@ -23,11 +23,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import enc.harvey.webrtc.rtcdemo.gcm.MessageSender;
-import enc.harvey.webrtc.rtcdemo.listener.OnCommandListener;
 import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
 
 public class WebRtcClient {
-    private final static String TAG = WebRtcClient.class.getCanonicalName();
+    private final static String TAG = WebRtcClient.class.getSimpleName();
     private final static int MAX_PEER = 2;
     private boolean[] endPoints = new boolean[MAX_PEER];
     private PeerConnectionFactory factory;
@@ -129,7 +128,7 @@ public class WebRtcClient {
         msgHandler.onPeer(data);
     }
 
-    public class MessageHandler implements OnCommandListener {
+    public class MessageHandler {
         private HashMap<String, Command> commandMap;
 
         private MessageHandler() {
@@ -141,7 +140,6 @@ public class WebRtcClient {
             Log.i("Command", "Init successfully");
         }
 
-        @Override
         public void onPeer(JSONObject data) {
             Log.d(TAG, "MessageHandler onPeer: " + data.toString());
             try {
@@ -169,12 +167,6 @@ public class WebRtcClient {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        }
-
-        @Override
-        public void onId(String regId) {
-            Log.d(TAG, "MessageHandler onId: " + regId);
-//            mListener.onCallReady();
         }
     }
 
@@ -215,6 +207,7 @@ public class WebRtcClient {
 
         @Override
         public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
+            Log.d(TAG, "IceConnectionState: " + iceConnectionState.toString());
             if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED) {
                 removePeer(id);
                 mListener.onStatusChanged("DISCONNECTED");
@@ -300,9 +293,9 @@ public class WebRtcClient {
         factory = new PeerConnectionFactory();
         msgHandler = new MessageHandler();
 
-
         iceServers.add(new PeerConnection.IceServer("stun:23.21.150.121"));
         iceServers.add(new PeerConnection.IceServer("stun:stun.l.google.com:19302"));
+        iceServers.add(new PeerConnection.IceServer("turn:numb.viagenie.ca", "river@enclave.vn", "enclaveit@123"));
 
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
@@ -339,8 +332,6 @@ public class WebRtcClient {
             videoSource.dispose();
         }
         factory.dispose();
-//        client.disconnect();
-//        client.close();
     }
 
     private int findEndPoint() {
@@ -357,15 +348,6 @@ public class WebRtcClient {
      */
     public void start() {
         setCamera();
-//        try {
-//            JSONObject message = new JSONObject();
-//            message.put("name", name);
-//            message.put("caller_id", from);
-////            client.emit("readyToStream", message);
-//            mSender.sendPost(to, message);
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
     }
 
     private void setCamera() {
