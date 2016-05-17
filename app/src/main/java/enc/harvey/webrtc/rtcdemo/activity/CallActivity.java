@@ -23,13 +23,12 @@ import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
 
 import enc.harvey.webrtc.rtcdemo.R;
-import enc.harvey.webrtc.rtcdemo.listener.OnCallingListener;
 import enc.harvey.webrtc.rtcdemo.rtc.PeerConnectionParameters;
 import enc.harvey.webrtc.rtcdemo.rtc.WebRtcClient;
 import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
 import enc.harvey.webrtc.rtcdemo.utils.Constants;
 
-public class CallActivity extends Activity implements WebRtcClient.RtcListener, View.OnClickListener, OnCallingListener {
+public class CallActivity extends Activity implements WebRtcClient.RtcListener, View.OnClickListener {
     private final String TAG = CallActivity.class.getSimpleName();
 
     private static final String VIDEO_CODEC_VP9 = "VP9";
@@ -160,7 +159,6 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         @Override
         public void onReceive(Context context, Intent intent) {
             String jsonMsg = intent.getStringExtra(Constants.KEY_JSON_MSG);
-            Log.d(TAG, "gcmMsgReceiver: " + jsonMsg);
             try {
                 JSONObject obj = new JSONObject(jsonMsg);
                 client.callMsgHandlerOnPeer(obj);
@@ -216,7 +214,6 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     @Override
     public void onLocalStream(MediaStream localStream) {
-        Log.d(TAG, "==============================================================================");
         Log.d(TAG, "onLocalStream");
         localStream.videoTracks.get(0).addRenderer(new VideoRenderer(localRender));
         VideoRendererGui.update(localRender,
@@ -245,15 +242,5 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
                 LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING,
                 scalingType);
-    }
-
-
-    @Override
-    public void onIncommingCall(final String callerId, Context context) {
-    }
-
-    @Override
-    public void onReceiveJSONObject(JSONObject object) {
-//        client.callMsgHandlerOnPeer(object);
     }
 }
