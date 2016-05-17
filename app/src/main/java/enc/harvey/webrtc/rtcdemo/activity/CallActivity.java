@@ -23,6 +23,7 @@ import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
 
 import enc.harvey.webrtc.rtcdemo.R;
+import enc.harvey.webrtc.rtcdemo.model.Message;
 import enc.harvey.webrtc.rtcdemo.rtc.PeerConnectionParameters;
 import enc.harvey.webrtc.rtcdemo.rtc.WebRtcClient;
 import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
@@ -56,8 +57,8 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     private String mCallerId;
     private String mCalleeId;
+    private String myRegId;
     private ImageButton btAnswer;
-    private String regId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,11 +75,12 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         this.mCalleeId = getIntent().getStringExtra(Constants.KEY_CALLEE_ID);
         Log.d(TAG, "onCreate mCallerId: " + mCallerId);
         Log.d(TAG, "onCreate mCalleeId: " + mCalleeId);
+
         SharedPreferences prefs = getApplicationContext().getSharedPreferences(AppConfig.PRE_NAME, Context.MODE_PRIVATE);
-        regId = prefs.getString("reg_id", null);
+        myRegId = prefs.getString(Constants.KEY_REG_ID, null);
 
         btAnswer = (ImageButton) findViewById(R.id.btAnswer);
-        if (mCallerId.equals(regId)) {
+        if (mCallerId.equals(myRegId)) {
             btAnswer.setVisibility(View.GONE);
         }
 
@@ -109,7 +111,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         PeerConnectionParameters params = new PeerConnectionParameters(
                 true, false, displaySize.x, displaySize.y, 30, 1, VIDEO_CODEC_VP9, true, 1, AUDIO_CODEC_OPUS, true);
 
-        client = new WebRtcClient(this, params, VideoRendererGui.getEGLContext(), getApplicationContext());
+        client = new WebRtcClient(this, params, VideoRendererGui.getEGLContext(), myRegId);
         this.onCallReady();
     }
 
@@ -130,7 +132,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     @Override
     public void onResume() {
         super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(gcmMsgReceiver, new IntentFilter("gcmMsgReceiver"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gcmMsgReceiver, new IntentFilter(Constants.FILTER_RECEIVE_GCM_MSG));
         vsv.onResume();
         if (client != null) {
             client.onResume();
@@ -171,7 +173,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
     private void answer() {
         Log.d(TAG, "ANSWER mCallerId: " + mCallerId);
         try {
-            client.sendMessage(mCallerId, "init", null);
+            client.sendMessage(mCallerId, Message.Type.init.toString(), null);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -181,7 +183,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
         try {
             JSONObject obj = new JSONObject();
             obj.put(Constants.KEY_CALLER_ID, mCallerId);
-            client.sendMessage(mCalleeId, "request", obj);
+            client.sendMessage(mCalleeId, Message.Type.request.toString(), obj);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -195,7 +197,7 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
 
     @Override
     public void onCallReady() {
-        if (mCallerId.equals(regId)) {
+        if (mCallerId.equals(myRegId)) {
             call();
         } else {
             startCam();
@@ -210,6 +212,9 @@ public class CallActivity extends Activity implements WebRtcClient.RtcListener, 
                 Toast.makeText(getApplicationContext(), newStatus, Toast.LENGTH_SHORT).show();
             }
         });
+        if (newStatus.equals(WebRtcClient.CONN_STATE_CLOSED)) {
+            finish();
+        }
     }
 
     @Override

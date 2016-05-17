@@ -1,26 +1,25 @@
 package enc.harvey.webrtc.rtcdemo.adapter;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import enc.harvey.webrtc.rtcdemo.listener.OnUserListInteractionListener;
-import enc.harvey.webrtc.rtcdemo.R;
-import enc.harvey.webrtc.rtcdemo.model.User;
-
 import java.util.List;
+
+import enc.harvey.webrtc.rtcdemo.R;
+import enc.harvey.webrtc.rtcdemo.listener.OnUserListInteractionListener;
+import enc.harvey.webrtc.rtcdemo.model.User;
 
 public class ContactRecyclerViewAdapter extends RecyclerView.Adapter<ContactRecyclerViewAdapter.ViewHolder> {
 
-    private final List<User> mValues;
+    private final List<User> users;
     private final OnUserListInteractionListener mListener;
 
-    public ContactRecyclerViewAdapter(List<User> items, OnUserListInteractionListener listener) {
-        mValues = items;
+    public ContactRecyclerViewAdapter(List<User> users, OnUserListInteractionListener listener) {
+        this.users = users;
         mListener = listener;
     }
 
@@ -33,14 +32,14 @@ public class ContactRecyclerViewAdapter extends RecyclerView.Adapter<ContactRecy
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.mItem = mValues.get(position);
-        holder.tvName.setText(mValues.get(position).getUserName());
+        holder.user = users.get(position);
+        holder.tvName.setText(users.get(position).getUserName());
 
         holder.btCall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (null != mListener) {
-                    mListener.onClickCallUser(holder.mItem);
+                    mListener.onClickCallUser(holder.user);
                 }
             }
         });
@@ -48,14 +47,14 @@ public class ContactRecyclerViewAdapter extends RecyclerView.Adapter<ContactRecy
 
     @Override
     public int getItemCount() {
-        return mValues.size();
+        return users.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final TextView tvName;
         public final ImageButton btCall;
-        public User mItem;
+        public User user;
 
         public ViewHolder(View view) {
             super(view);

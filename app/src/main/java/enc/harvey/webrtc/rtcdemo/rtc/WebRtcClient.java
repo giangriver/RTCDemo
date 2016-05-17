@@ -1,7 +1,5 @@
 package enc.harvey.webrtc.rtcdemo.rtc;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.opengl.EGLContext;
 import android.util.Log;
 
@@ -11,7 +9,6 @@ import org.webrtc.AudioSource;
 import org.webrtc.DataChannel;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
-import org.webrtc.MediaSource;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
@@ -25,7 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import enc.harvey.webrtc.rtcdemo.gcm.MessageSender;
-import enc.harvey.webrtc.rtcdemo.utils.AppConfig;
+import enc.harvey.webrtc.rtcdemo.model.Message;
 
 public class WebRtcClient {
     private final static String TAG = WebRtcClient.class.getSimpleName();
@@ -42,7 +39,10 @@ public class WebRtcClient {
     //    private Socket client;
     private MessageSender mSender;
     private MessageHandler msgHandler;
-    private Context context;
+    private String myRegId;
+
+    public static final String CONN_STATE_CONNECTING = "CONNECTING";
+    public static final String CONN_STATE_CLOSED = "CLOSED";
 
     /**
      * Implement this interface to be notified of events.
@@ -65,7 +65,6 @@ public class WebRtcClient {
 
     private class CreateOfferCommand implements Command {
         public void execute(String peerId, JSONObject payload) throws JSONException {
-            Log.d(TAG, "CreateOfferCommand");
             Peer peer = peers.get(peerId);
             peer.pc.createOffer(peer, pcConstraints);
         }
@@ -73,11 +72,10 @@ public class WebRtcClient {
 
     private class CreateAnswerCommand implements Command {
         public void execute(String peerId, JSONObject payload) throws JSONException {
-            Log.d(TAG, "CreateAnswerCommand");
             Peer peer = peers.get(peerId);
             SessionDescription sdp = new SessionDescription(
-                    SessionDescription.Type.fromCanonicalForm(payload.getString("type")),
-                    payload.getString("sdp")
+                    SessionDescription.Type.fromCanonicalForm(payload.getString(Message.KEY_TYPE)),
+                    payload.getString(Message.KEY_SDP)
             );
             peer.pc.setRemoteDescription(peer, sdp);
             peer.pc.createAnswer(peer, pcConstraints);
@@ -86,11 +84,10 @@ public class WebRtcClient {
 
     private class SetRemoteSDPCommand implements Command {
         public void execute(String peerId, JSONObject payload) throws JSONException {
-            Log.d(TAG, "SetRemoteSDPCommand");
             Peer peer = peers.get(peerId);
             SessionDescription sdp = new SessionDescription(
-                    SessionDescription.Type.fromCanonicalForm(payload.getString("type")),
-                    payload.getString("sdp")
+                    SessionDescription.Type.fromCanonicalForm(payload.getString(Message.KEY_TYPE)),
+                    payload.getString(Message.KEY_SDP)
             );
             peer.pc.setRemoteDescription(peer, sdp);
         }
@@ -98,13 +95,12 @@ public class WebRtcClient {
 
     private class AddIceCandidateCommand implements Command {
         public void execute(String peerId, JSONObject payload) throws JSONException {
-            Log.d(TAG, "AddIceCandidateCommand");
             PeerConnection pc = peers.get(peerId).pc;
             if (pc.getRemoteDescription() != null) {
                 IceCandidate candidate = new IceCandidate(
-                        payload.getString("id"),
-                        payload.getInt("label"),
-                        payload.getString("candidate")
+                        payload.getString(Message.KEY_ID),
+                        payload.getInt(Message.KEY_LABEL),
+                        payload.getString(Message.KEY_CANDIDATE)
                 );
                 pc.addIceCandidate(candidate);
             }
@@ -120,12 +116,10 @@ public class WebRtcClient {
      * @throws JSONException
      */
     public void sendMessage(String to, String type, JSONObject payload) throws JSONException {
-        SharedPreferences prefs = context.getSharedPreferences(AppConfig.PRE_NAME, Context.MODE_PRIVATE);
-        String regId = prefs.getString("reg_id", null);
         JSONObject message = new JSONObject();
-        message.put("sent_from", regId);
-        message.put("type", type);
-        message.put("payload", payload);
+        message.put(Message.KEY_SENT_FROM, myRegId);
+        message.put(Message.KEY_TYPE, type);
+        message.put(Message.KEY_PAYLOAD, payload);
         mSender.sendPost(to, message);
     }
 
@@ -138,24 +132,22 @@ public class WebRtcClient {
 
         private MessageHandler() {
             this.commandMap = new HashMap<>();
-            commandMap.put("init", new CreateOfferCommand());
-            commandMap.put("offer", new CreateAnswerCommand());
-            commandMap.put("answer", new SetRemoteSDPCommand());
-            commandMap.put("candidate", new AddIceCandidateCommand());
+            commandMap.put(Message.Type.init.toString(), new CreateOfferCommand());
+            commandMap.put(Message.Type.offer.toString(), new CreateAnswerCommand());
+            commandMap.put(Message.Type.answer.toString(), new SetRemoteSDPCommand());
+            commandMap.put(Message.Type.candidate.toString(), new AddIceCandidateCommand());
             Log.i("Command", "Init successfully");
         }
 
         public void onPeer(JSONObject data) {
             Log.d(TAG, "MessageHandler onPeer: " + data.toString());
             try {
-                String from = data.getString("sent_from");
-                String type = data.getString("type");
+                String from = data.getString(Message.KEY_SENT_FROM);
+                String type = data.getString(Message.KEY_TYPE);
                 JSONObject payload = null;
-                if (!type.equals("init")) {
-                    String str = data.getString("payload");
-//                    payload = data.getJSONObject("payload");
+                if (!type.equals(Message.Type.init.toString())) {
+                    String str = data.getString(Message.KEY_PAYLOAD);
                     payload = new JSONObject(str);
-                    Log.d(TAG, "payload: " + payload.toString());
                 }
                 // if peer is unknown, try to add him
                 if (!peers.containsKey(from)) {
@@ -185,8 +177,8 @@ public class WebRtcClient {
             // TODO: modify sdp to use pcParams prefered codecs
             try {
                 JSONObject payload = new JSONObject();
-                payload.put("type", sdp.type.canonicalForm());
-                payload.put("sdp", sdp.description);
+                payload.put(Message.KEY_TYPE, sdp.type.canonicalForm());
+                payload.put(Message.KEY_SDP, sdp.description);
                 sendMessage(id, sdp.type.canonicalForm(), payload);
                 pc.setLocalDescription(Peer.this, sdp);
             } catch (JSONException e) {
@@ -217,6 +209,9 @@ public class WebRtcClient {
                 removePeer(id);
                 mListener.onStatusChanged("DISCONNECTED");
             }
+            if (iceConnectionState == PeerConnection.IceConnectionState.CLOSED) {
+                mListener.onStatusChanged(CONN_STATE_CLOSED);
+            }
         }
 
         @Override
@@ -227,10 +222,10 @@ public class WebRtcClient {
         public void onIceCandidate(final IceCandidate candidate) {
             try {
                 JSONObject payload = new JSONObject();
-                payload.put("label", candidate.sdpMLineIndex);
-                payload.put("id", candidate.sdpMid);
-                payload.put("candidate", candidate.sdp);
-                sendMessage(id, "candidate", payload);
+                payload.put(Message.KEY_LABEL, candidate.sdpMLineIndex);
+                payload.put(Message.KEY_ID, candidate.sdpMid);
+                payload.put(Message.KEY_CANDIDATE, candidate.sdp);
+                sendMessage(id, Message.Type.candidate.toString(), payload);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -269,7 +264,7 @@ public class WebRtcClient {
             }
             pc.addStream(localMS); //, new MediaConstraints()
 
-            mListener.onStatusChanged("CONNECTING");
+            mListener.onStatusChanged(CONN_STATE_CONNECTING);
         }
     }
 
@@ -289,10 +284,10 @@ public class WebRtcClient {
         endPoints[peer.endPoint] = false;
     }
 
-    public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EGLContext mEGLcontext, Context mContext) {
+    public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EGLContext mEGLcontext, String myRegId) {
+        this.myRegId = myRegId;
         mListener = listener;
         pcParams = params;
-        context = mContext;
         mSender = new MessageSender();
         PeerConnectionFactory.initializeAndroidGlobals(listener, true, true,
                 params.videoCodecHwAcceleration, mEGLcontext);
@@ -332,12 +327,11 @@ public class WebRtcClient {
             peer.pc.dispose();
         }
         if (videoSource != null) {
-            if (videoSource.state() != MediaSource.State.ENDED) {
-                videoSource.stop();
-            }
             videoSource.dispose();
+            videoSource = null;
         }
         factory.dispose();
+        localMS = null;
     }
 
     private int findEndPoint() {

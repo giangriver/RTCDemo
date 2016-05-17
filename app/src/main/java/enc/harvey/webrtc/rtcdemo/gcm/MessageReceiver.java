@@ -10,6 +10,7 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import enc.harvey.webrtc.rtcdemo.model.Message;
 import enc.harvey.webrtc.rtcdemo.utils.Constants;
 
 /**
@@ -30,17 +31,17 @@ public class MessageReceiver extends WakefulBroadcastReceiver {
             }
             Log.d(TAG, "=========================================================================");
 
-            String type = bundle.getString("type", null);
-            if (type.equals("request")) {
-                JSONObject payload = new JSONObject(bundle.getString("payload"));
+            String type = bundle.getString(Message.KEY_TYPE, null);
+            if (type.equals(Message.Type.request.toString())) {
+                JSONObject payload = new JSONObject(bundle.getString(Message.KEY_PAYLOAD));
                 String callerId = payload.getString(Constants.KEY_CALLER_ID);
                 Intent broadcastIntent = new Intent(Constants.FILTER_RECEIVE_CALLING_REQUEST);
                 broadcastIntent.putExtra(Constants.KEY_CALLER_ID, callerId);
                 LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
             }
 
-            if (message.toString() != null && !message.toString().trim().equals("")) {
-                Intent broadcastIntent = new Intent("gcmMsgReceiver");
+            if (message.toString() != null && !message.toString().trim().isEmpty()) {
+                Intent broadcastIntent = new Intent(Constants.FILTER_RECEIVE_GCM_MSG);
                 broadcastIntent.putExtra(Constants.KEY_JSON_MSG, message.toString());
                 LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
             }
